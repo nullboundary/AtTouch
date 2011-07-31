@@ -1,0 +1,27 @@
+Arduino Library for the Atmel AT42QT1070 QTouch 7-channel Sensor IC
+
+functions:
+
+begin(int interruptPin)
+
+initializes and configures the library
+
+
+hit()
+
+returns whether a key has been hit or not, True/False
+
+
+getKey()
+
+returns the keyNum currently held down.
+
+
+readActiveKey()
+
+returns the keyNum currently pressed. 
+
+
+pressHold()
+
+returns whether or not the a key has been held for 900ms 

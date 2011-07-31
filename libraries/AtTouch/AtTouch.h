@@ -46,13 +46,15 @@ public:
   
   void begin(int interruptPin);
   int readActiveKey(); 
-  int readActiveAddress();
+  
   boolean hit();
   int getKey();
   void update();
   boolean pressHold();
 
 private:
+
+  int readActiveAddress();	
 	
   int _changePin;
   int _interruptVal;
