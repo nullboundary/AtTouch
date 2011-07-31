@@ -1,3 +1,12 @@
+/************************************************************************************
+ * 	
+ * 	Name    : AtTouch Example Press                     
+ * 	Author  : Noah Shibley, NoMi Design  nomidesign.net                        
+ * 	Date    : July 31th 2011                                    
+ * 	Version : 0.1                                              
+ * 	Notes   : Arduino Library for use with the AT42QT1070 Q-touch chip via i2c
+************************************************************************************/
+
 #include <Wire.h>
 #include <AtTouch.h>
 

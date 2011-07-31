@@ -1,4 +1,11 @@
-Arduino Library for the Atmel AT42QT1070 QTouch 7-channel Sensor IC
+/************************************************************************************
+ * 	
+ * 	Name    : AtTouch Readme                    
+ * 	Author  : Noah Shibley, NoMi Design  nomidesign.net                        
+ * 	Date    : July 31th 2011                                    
+ * 	Version : 0.1                                              
+ * 	Notes   : Arduino Library for the Atmel AT42QT1070 QTouch 7-channel Sensor IC via i2c
+************************************************************************************/
 
 functions:
 
