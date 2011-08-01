@@ -161,7 +161,7 @@ int AtTouch::readActiveAddress(){
 
 }
 
-boolean AtTouch::pressHold()
+boolean AtTouch::hold()
 {
   if(holdDown_ == true)
   {

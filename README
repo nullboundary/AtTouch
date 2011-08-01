@@ -29,6 +29,6 @@ readActiveKey()
 returns the keyNum currently pressed. 
 
 
-pressHold()
+hold()
 
 returns whether or not the a key has been held for 900ms 

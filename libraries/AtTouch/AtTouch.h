@@ -50,7 +50,7 @@ public:
   boolean hit();
   int getKey();
   void update();
-  boolean pressHold();
+  boolean hold();
 
 private:
 

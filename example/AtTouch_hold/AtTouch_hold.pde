@@ -35,7 +35,7 @@ void loop()
   
   digitalWrite(ledPin,LOW);
 
-  if(touch.pressHold() == true) //press and hold
+  if(touch.hold() == true) //press and hold
   {
     keyDown = true; 
     hitKeyVal = touch.getKey();
