@@ -33,7 +33,7 @@ void setup()
 void loop()
 {
 	
-  digitalWrite(ledPin.LOW); 	
+  digitalWrite(ledPin,LOW); 	
 	
   if(touch.hit() == true) //checks if the hit flag has been triggered by the interrupt 
   {
@@ -47,7 +47,7 @@ void loop()
 	    else
 	    {
 	        Serial.print("button #");
-	        Serial.print(hitKeyVal);  
+	        Serial.print(hitKeyNum);  
 	        Serial.println(" Down");
 	    }
   }

@@ -168,7 +168,7 @@ boolean AtTouch::hold()
  	  unsigned long currentTime = millis();
 	  unsigned long elapsedTime = currentTime - startTime;
 
-	  if (elapsedTime >= 900) //interval time as passed
+	  if (elapsedTime >= 1100) //interval time as passed
 	  {
 		
 		return true; 
