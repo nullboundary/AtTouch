@@ -56,6 +56,15 @@ void AtTouch::begin(int interruptPin){
   startTime = 0;
 
   Wire.begin(); 
+
+  // reset device by writing non-zero value to register 0x39  
+  Wire.beginTransmission(0x1B); // transmit to device 
+  Wire.send(0x39);             // sets register pointer to the reset register (0x39)  
+  Wire.send(0xFF);             // send non-zero value to initiate a reset
+  Wire.endTransmission();      // stop transmitting 
+  delay(100); // wait for device to restart
+  Wire.begin(); // re-open the i2c after device has restarted
+
   pinMode(_changePin, INPUT);
   attachInterrupt(_interruptVal,bttnPressISR,FALLING);  //setup the key change interrupt, call bttnpress on interrupt
 
