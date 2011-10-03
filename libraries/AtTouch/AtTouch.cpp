@@ -46,17 +46,19 @@ AtTouch::AtTouch()
  * begin
  * 
  ***********************************************************/
-void AtTouch::begin(int interruptPin){
+void AtTouch::begin(int interruptPin,boolean disableAutoCal){
 
-  _changePin = interruptPin;
-  _interruptVal = interruptPin-2;  //arduino interupt values 0=pin2, 1=pin3
+  _changePin = (byte) interruptPin;
+  _interruptVal = (byte) interruptPin-2;  //arduino interupt values 0=pin2, 1=pin3
 	
   keyHit = false; 
   holdDown_ = false;
   startTime = 0;
+  holdRefreshInterval = 1; //1 for 100ms 1000ms/100 = 10 so 100ms/100 = 1
+	
+#ifdef WIRE  //use the Wire lib
 
-  Wire.begin(); 
-
+  Wire.begin(); 	
   // reset device by writing non-zero value to register 0x39  
   Wire.beginTransmission(0x1B); // transmit to device 
   Wire.send(0x39);             // sets register pointer to the reset register (0x39)  
@@ -64,7 +66,40 @@ void AtTouch::begin(int interruptPin){
   Wire.endTransmission();      // stop transmitting 
   delay(100); // wait for device to restart
   Wire.begin(); // re-open the i2c after device has restarted
+  
 
+#else //or use the I2C lib
+
+  I2c.begin(); 
+  I2c.pullup(0);	
+  // reset device by writing non-zero value to register 0x39  
+  I2c.beginTransmission(0x1B); // transmit to device 
+  I2c.send(0x39);             // sets register pointer to the reset register (0x39)  
+  I2c.send(0xFF);             // send non-zero value to initiate a reset
+  I2c.endTransmission();      // stop transmitting 
+  delay(100); // wait for device to restart
+  I2c.begin(); // re-open the i2c after device has restarted
+  I2c.pullup(0);
+
+#endif
+
+  if(disableAutoCal == true)
+  {
+	#ifdef WIRE
+		delay(100);  
+		Wire.beginTransmission(0x1B);   // 
+	  	Wire.send(0x37); //set to register 0x37, disable hold down auto calibration
+	  	Wire.send(0);
+		Wire.endTransmission();
+	#else
+		delay(100);  
+		I2c.beginTransmission(0x1B);   // 
+	  	I2c.send(0x37); //set to register 0x37, disable hold down auto calibration
+	  	I2c.send(0);
+		I2c.endTransmission();
+	#endif
+	
+  }
   pinMode(_changePin, INPUT);
   attachInterrupt(_interruptVal,bttnPressISR,FALLING);  //setup the key change interrupt, call bttnpress on interrupt
 
@@ -81,6 +116,31 @@ boolean AtTouch::hit()
   return keyHit;
 }  
 
+/***********************************************************
+ * 
+ * getStartTime
+ * 
+ ***********************************************************/
+unsigned long AtTouch::getStartTime()
+{
+	return startTime;	
+}
+
+/***********************************************************
+ * 
+ * setRefreshSpeed
+ * 
+ ***********************************************************/
+void AtTouch::setRefreshSpeed(int intervalMilSec)
+{
+	holdRefreshInterval = intervalMilSec/100;
+}
+
+/***********************************************************
+ * 
+ * update
+ * 
+ ***********************************************************/
 void AtTouch::update()
 {
 	if (keyHit == true)
@@ -90,12 +150,14 @@ void AtTouch::update()
 	}
 	
 }
-
-
-
+/***********************************************************
+ * 
+ * getKey
+ * 
+ ***********************************************************/
 int AtTouch::getKey()
 {
-	return activeKey_;
+	return (int) activeKey_;
 }
 
 /***********************************************************
@@ -115,7 +177,7 @@ int AtTouch::readActiveKey()
   {
    keyValue++; //increment keyValue to find bit place
   }
- 	activeKey_ = keyValue; //save the keyValue for later
+ 	activeKey_ = (byte) keyValue; //save the keyValue for later
 	if(keyValue == 9) { holdDown_ = false; } //9 is key up, so stop press and hold timer
 
   return keyValue;
@@ -140,18 +202,37 @@ int AtTouch::readActiveAddress(){
     int readstatus = 0;
     int bttnNum = 0;
 
-    // to clear change int we must read both status bytes 02 and 03
-    Wire.beginTransmission(0x1B); // transmit to device 
-    Wire.send(0x02); // want to read detection status // set pointer
-    Wire.endTransmission();      // stop transmitting
-    Wire.requestFrom(0x1B, 1);    // request 1 byte from slave device
-    readstatus = Wire.receive();
+	#ifdef WIRE
+	
+    	// to clear change int we must read both status bytes 02 and 03
+	    Wire.beginTransmission(0x1B); // transmit to device 
+	    Wire.send(0x02); // want to read detection status // set pointer
+	    Wire.endTransmission();      // stop transmitting
+	    Wire.requestFrom(0x1B, 1);    // request 1 byte from slave device
+	    readstatus = Wire.receive();
 
-    Wire.beginTransmission(0x1B); // transmit to device 
-    Wire.send(0x03); // want to read key status // set pointer
-    Wire.endTransmission();      // stop transmitting
-    Wire.requestFrom(0x1B, 1);    // request 1 byte from slave device
-    bttnNum = Wire.receive();
+	    Wire.beginTransmission(0x1B); // transmit to device 
+	    Wire.send(0x03); // want to read key status // set pointer
+	    Wire.endTransmission();      // stop transmitting
+	    Wire.requestFrom(0x1B, 1);    // request 1 byte from slave device
+	    bttnNum = Wire.receive();
+	#else
+	
+		// to clear change int we must read both status bytes 02 and 03
+	    I2c.beginTransmission(0x1B); // transmit to device 
+	    I2c.send(0x02); // want to read detection status // set pointer
+	    I2c.endTransmission();      // stop transmitting
+	    I2c.requestFrom(0x1B, 1);    // request 1 byte from slave device
+	    readstatus = I2c.receive();
+
+	    I2c.beginTransmission(0x1B); // transmit to device 
+	    I2c.send(0x03); // want to read key status // set pointer
+	    I2c.endTransmission();      // stop transmitting
+	    I2c.requestFrom(0x1B, 1);    // request 1 byte from slave device
+	    bttnNum = I2c.receive();
+	
+	#endif
+	
 
     keyHit = false;
     if (readstatus == 1) // seems to trigger int twice for each press... this filters the second one...
@@ -159,7 +240,9 @@ int AtTouch::readActiveAddress(){
       
       if(bttnNum == 0)
       {
-        Serial.println("button read error");
+	    #ifdef SERIAL_DEBUG
+        Serial.println("read error");
+		#endif
       }  
       return bttnNum;
     }
@@ -170,24 +253,40 @@ int AtTouch::readActiveAddress(){
 
 }
 
+/***********************************************************
+ * 
+ * hold
+ * 
+ ***********************************************************/
 boolean AtTouch::hold()
 {
   if(holdDown_ == true)
   {
- 	  unsigned long currentTime = millis();
-	  unsigned long elapsedTime = currentTime - startTime;
+	  unsigned long elapsedTime = millis() - startTime;
 
-	  if (elapsedTime >= 1100) //interval time as passed
+	  if (elapsedTime >= 1100) //hold interval time has passed
 	  {
 		
-		return true; 
+		unsigned int holdRefreshTime = millis()/100 - updateTime;
+		
+		if(holdRefreshTime >= holdRefreshInterval) //restrict update 100ms refresh
+		{
+			updateTime = millis()/100; //divide by 100, lose some precision, 100ms minimum
+			return true;
+		}
+		else //don't update too fast
+		{
+			return false; 
+		}
+		
+		 
 	  }
-	  else
+	  else //haven't held down long enough
 	  {
 		return false;
 	  }
    }
-   else
+   else //not holding down at all
    {
 	    return false; 
    }	

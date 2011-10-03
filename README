@@ -7,6 +7,9 @@
  * 	Notes   : Arduino Library for the Atmel AT42QT1070 QTouch 7-channel Sensor IC via i2c
 ************************************************************************************/
 
+A setup tutorial:
+http://nomidesign.net/2011/08/01/attouch-library-for-arduino-and-the-at42qt1070/
+
 functions:
 
 begin(int interruptPin)
